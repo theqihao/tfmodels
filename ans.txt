@@ -1,0 +1,19 @@
+googlenet_v1:
+	height, width , channel= 224, 224, 3
+	num_classes = 1000
+	batch_size = 16, memory = 2358.20MB
+	batch_size = 32, memory = 4584.05MB
+
+vggnet16:
+	height, width , channel= 224, 224, 3
+	num_classes = 1000
+	batch_size = 16, memory = 8805.47MB
+	batch_size = 32, memory = 14843.78MB
+
+vggnet19:
+	height, width , channel= 224, 224, 3
+	num_classes = 1000
+	batch_size = 16, memory = 9496.11MB
+	batch_size = 32, memory = 16118.87MB
+
+	
