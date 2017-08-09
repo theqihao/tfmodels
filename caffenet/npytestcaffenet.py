@@ -5,16 +5,59 @@
 
 from numpy import *
 import os
+from pylab import *
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.cbook as cbook
+import time
+from scipy.misc import imread
+from scipy.misc import imresize
+import matplotlib.image as mpimg
+from scipy.ndimage import filters
+import urllib
 from numpy import random
+import Image
+
+
 import tensorflow as tf
 
-train_x = zeros((32, 227,227,3)).astype(float32)
-train_y = zeros((32, 1000))
+from caffe_classes import class_names
+
+train_x = zeros((1, 227,227,3)).astype(float32)
+train_y = zeros((1, 1000))
 xdim = train_x.shape[1:]
 ydim = train_y.shape[1]
 
 
+file_data = tf.read_file('poodle.png')##how to read pictures with tf
+# Decode the image data
+img = tf.image.decode_png(file_data, channels=3)#if it is jpeg ,then decode_jpeg
+img = tf.reverse(img, [False, False, True])#from rgb to bgr
+
+##########################################################
+new_shape = np.array([256, 256])#first it be scale to 256 256 
+img = tf.image.resize_images(img, new_shape[0], new_shape[1])
+##########################################################
+
+# 
+# Use the slice workaround until crop_to_bounding_box supports deferred tensor shapes
+# See: https://github.com/tensorflow/tensorflow/issues/521
+##########################################################Center crop
+offset = (new_shape - 227) / 2##croppppppppppp
+img = tf.slice(img, [offset[0], offset[1], 0], [227, 227, -1])
+
+##########################################################
+mean=np.array([104., 117., 124.])#substact the mean
+img=tf.to_float(img) - mean
+##########################################################
+init_op = tf.initialize_all_variables()
+sess = tf.InteractiveSession()                   
+with sess.as_default():
+  sess.run(init_op)
+image=img.eval()                          ##this part is to show the picture
+Image.fromarray(np.asarray(uint8(image))).show()
+################################################################################
+net_data = load("caffenet.npy").item()
 
 def conv(input, kernel, biases, k_h, k_w, c_o, s_h, s_w,  padding="VALID", group=1):
     '''From https://github.com/ethereon/caffe-tensorflow
@@ -33,6 +76,15 @@ def conv(input, kernel, biases, k_h, k_w, c_o, s_h, s_w,  padding="VALID", group
         output_groups = [convolve(i, k) for i,k in zip(input_groups, kernel_groups)]
         conv = tf.concat(3, output_groups)
     return  tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape().as_list())
+
+init_op = tf.initialize_all_variables()
+sess = tf.InteractiveSession()
+with sess.as_default():
+  sess.run(init_op)
+for i in range(1): #length of your filename list
+  image =img.eval() #here is your image Tensor :) 
+image=np.array([image])
+x = tf.Variable(image)
 
 #conv1
 #conv(11, 11, 96, 4, 4, padding='VALID', name='conv1')
@@ -134,19 +186,17 @@ fc8 = tf.nn.xw_plus_b(fc7, fc8W, fc8b)
 prob = tf.nn.softmax(fc8)
 
 init = tf.initialize_all_variables()
-sess = tf.Session()
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
 sess.run(init)
 
-mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(prob))
-run_metadata = tf.RunMetadata()
-_ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
-tf.contrib.tfprof.model_analyzer.print_model_analysis(
-  tf.get_default_graph(),
-  run_meta=run_metadata,
-  tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
-
+output = sess.run(prob)
 ################################################################################
 
+#Output:
 
+inds = argsort(output)[0,:]
+for i in range(5):
+    print class_names[inds[-1-i]], output[0, inds[-1-i]]
 

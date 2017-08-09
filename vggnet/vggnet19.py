@@ -182,7 +182,7 @@ def run_benchmark():
         qihao_run(sess, mygrad2, {keep_prob:0.5}, "Forward-backward")
         #time_tensorflow_run(sess, grad, {keep_prob:0.5}, "Forward-backward")
 
-batch_size=32
+batch_size=16
 num_batches=100
 
 run_benchmark()

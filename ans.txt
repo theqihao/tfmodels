@@ -16,4 +16,16 @@ vggnet19:
 	batch_size = 16, memory = 9496.11MB
 	batch_size = 32, memory = 16118.87MB
 
+
+reset:
+	height, width , channel= 224, 224, 3
+	num_classes = 1000
+	batch_size = 32
+	layer = 50, memory = 20414.46MB
+	layer = 101, memory = 34118.32MB
+	layer = 152, memory = 50888.96MB
+
+
+
+
 	
