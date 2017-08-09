@@ -429,9 +429,10 @@ def time_tensorflow_run(session, target, info_string):
     print ('%s: %s across %d steps, %.3f +/- %.3f sec / batch' %
            (datetime.now(), info_string, num_batches, mn, sd))
     
-batch_size = 16
+batch_size = 32
 height, width = 224, 224
 inputs = tf.random_uniform((batch_size, height, width, 3))
+outputs = tf.random_uniform((batch_size, 1000))
 with slim.arg_scope(resnet_arg_scope(is_training=False)):
    net, end_points = resnet_v2_152(inputs, 1000)
 
@@ -441,7 +442,7 @@ sess.run(init)
 #num_batches=100
 #time_tensorflow_run(sess, net, "Forward") 
 
-mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(net))
+mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(net-outputs))
 run_metadata = tf.RunMetadata()
 _ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
 tf.contrib.tfprof.model_analyzer.print_model_analysis(

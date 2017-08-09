@@ -1,3 +1,3 @@
 all:
-	python3 resnet.py > x.txt
+	python3 alexnet.py > x.txt
 	cat x.txt | grep _TFProfRoot

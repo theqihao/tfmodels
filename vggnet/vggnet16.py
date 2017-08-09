@@ -174,12 +174,12 @@ def run_benchmark():
         grad = tf.gradients(objective, p)
         #loss = tf.reduce_mean(tf.reduce_sum(fc8-labels), reduction_indices=[1])
         #mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
-        mygrad2 = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(fc8))
+        mygrad2 = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(fc8-labels))
 
         qihao_run(sess, mygrad2, {keep_prob:0.5}, "Forward-backward")
         #time_tensorflow_run(sess, grad, {keep_prob:0.5}, "Forward-backward")
 
-batch_size=32
+batch_size=4
 num_batches=100
 
 run_benchmark()

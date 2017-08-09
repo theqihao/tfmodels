@@ -548,7 +548,7 @@ def run_benchmark():
     time_tensorflow_run(sess, grad, "Forward-backward")
     """
     #对Inception V1进行运算性能测试 
-    batch_size = 16
+    batch_size = 32
     height, width = 224, 224 
     num_classes = 1000
     num_batches = 5
