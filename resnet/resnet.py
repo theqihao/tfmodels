@@ -429,19 +429,26 @@ def time_tensorflow_run(session, target, info_string):
     print ('%s: %s across %d steps, %.3f +/- %.3f sec / batch' %
            (datetime.now(), info_string, num_batches, mn, sd))
     
-batch_size = 32
+batch_size = 4
 height, width = 224, 224
 inputs = tf.random_uniform((batch_size, height, width, 3))
 outputs = tf.random_uniform((batch_size, 1000))
 with slim.arg_scope(resnet_arg_scope(is_training=False)):
-   net, end_points = resnet_v2_152(inputs, 1000)
+   net, end_points = resnet_v2_50(inputs, 1000)
 
 init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)  
+"""
 #num_batches=100
 #time_tensorflow_run(sess, net, "Forward") 
-
+init = tf.global_variables_initializer()
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True      #????????  
+config.gpu_options.allocator_type = 'BFC'
+sess = tf.Session(config=config)
+sess.run(init)
+"""
 mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(net-outputs))
 run_metadata = tf.RunMetadata()
 _ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)

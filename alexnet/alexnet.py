@@ -19,7 +19,7 @@ import time
 import tensorflow as tf
 
 
-batch_size=32
+batch_size=128
 num_batches=100
 
 def print_activations(t):
@@ -215,6 +215,7 @@ def run_benchmark():
     # Start running operations on the Graph.
         """
         config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True      #????????  
         config.gpu_options.allocator_type = 'BFC'
         sess = tf.Session(config=config)
         sess.run(init)
