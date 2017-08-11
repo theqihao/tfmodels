@@ -38,7 +38,8 @@ import collections
 import tensorflow as tf
 slim = tf.contrib.slim
 
-
+import os  
+os.environ["CUDA_VISIBLE_DEVICES"] = '0' 
 
 class Block(collections.namedtuple('Block', ['scope', 'unit_fn', 'args'])):
   """A named tuple describing a ResNet block.
@@ -434,8 +435,8 @@ height, width = 224, 224
 inputs = tf.random_uniform((batch_size, height, width, 3))
 outputs = tf.random_uniform((batch_size, 1000))
 with slim.arg_scope(resnet_arg_scope(is_training=False)):
-   net, end_points = resnet_v2_50(inputs, 1000)
-
+   net, end_points = resnet_v2_101(inputs, 1000)
+"""
 init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)  
@@ -446,12 +447,16 @@ init = tf.global_variables_initializer()
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True      #????????  
 config.gpu_options.allocator_type = 'BFC'
+config.allow_soft_placement = False
 sess = tf.Session(config=config)
+from tensorflow.python import debug as tf_debug
+sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 sess.run(init)
-"""
+
 mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(net-outputs))
 run_metadata = tf.RunMetadata()
-_ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
+for i in range(100):
+	_ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
 tf.contrib.tfprof.model_analyzer.print_model_analysis(
   tf.get_default_graph(),
   run_meta=run_metadata,
