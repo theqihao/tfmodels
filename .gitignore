@@ -1,0 +1,10 @@
+# alexnet
+alexnet/*.txt
+
+
+# wrn
+wrn/wrn*
+wrn/*.txt
+wrn/__pycache__/*
+wrn/cifar-100-binary/*
+wrn/cifar-100-binary.tar.gz
