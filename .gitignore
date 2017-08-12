@@ -1,6 +1,8 @@
 # alexnet
 alexnet/*.txt
 
+# resnext
+resnext/__pycache__/*
 
 # wrn
 wrn/wrn*
