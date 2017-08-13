@@ -22,9 +22,9 @@ cd wrn-tensorflow
 wget https://www.cs.toronto.edu/~kriz/cifar-100-binary.tar.gz
 tar xvf cifar-100-binary.tar.gz
 
-# Run! (WRN-28-1)
+# Run! (WRN-28-10)
 ./train.sh
 
 # To evaluate
-./eval.sh wrn_28_1 4 1
+./eval.sh wrn_28_10 4 10
 ```
