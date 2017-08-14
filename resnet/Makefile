@@ -1,3 +1,0 @@
-all:
-	python3 resnet.py > x.txt
-	cat x.txt | grep _TFProfRoot

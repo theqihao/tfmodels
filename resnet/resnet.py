@@ -430,18 +430,19 @@ def time_tensorflow_run(session, target, info_string):
     print ('%s: %s across %d steps, %.3f +/- %.3f sec / batch' %
            (datetime.now(), info_string, num_batches, mn, sd))
     
-batch_size = 16
+batch_size = 32
+num_batches = 10
 height, width = 224, 224
 inputs = tf.random_uniform((batch_size, height, width, 3))
 outputs = tf.random_uniform((batch_size, 1000))
 with slim.arg_scope(resnet_arg_scope(is_training=False)):
-   net, end_points = resnet_v2_50(inputs, 1000)
+   net, end_points = resnet_v2_152(inputs, 1000)
 """
 init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)  
 """
-#num_batches=100
+
 #time_tensorflow_run(sess, net, "Forward") 
 init = tf.global_variables_initializer()
 config = tf.ConfigProto()
@@ -455,10 +456,18 @@ sess.run(init)
 
 mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(net-outputs))
 run_metadata = tf.RunMetadata()
-for i in range(100):
+for i in range(num_batches):
 	_ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
-tf.contrib.tfprof.model_analyzer.print_model_analysis(
-  tf.get_default_graph(),
-  run_meta=run_metadata,
-  tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+opts = (tf.profiler.ProfileOptionBuilder()
+          .with_max_depth(1000)
+          .select(['bytes','peak_bytes','residual_bytes','output_bytes'])
+          .account_displayed_op_only(False)
+          .with_stdout_output()
+          .with_min_memory(1, 1, 1, 1)
+          .build())
+tf.profiler.profile(
+          tf.get_default_graph(),
+          run_meta=run_metadata,
+          cmd='scope',
+          options=opts)
 
