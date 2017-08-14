@@ -150,25 +150,25 @@ def train():
         run_metadata = tf.RunMetadata()
         for step in range(init_step, FLAGS.max_steps):
             # Test
-            if step % FLAGS.test_interval == 0:
-                test_loss, test_acc = 0.0, 0.0
-                for i in range(FLAGS.test_iter):
-                    test_images_val, test_labels_val = sess.run([test_images, test_labels])
-                    loss_value, acc_value = sess.run([network.loss, network.acc],
-                                feed_dict={network.is_train:False, images:test_images_val, labels:test_labels_val})
-                    test_loss += loss_value
-                    test_acc += acc_value
-                test_loss /= FLAGS.test_iter
-                test_acc /= FLAGS.test_iter
-                test_best_acc = max(test_best_acc, test_acc)
-                format_str = ('%s: (Test)     step %d, loss=%.4f, acc=%.4f')
-                print (format_str % (datetime.now(), step, test_loss, test_acc))
+            # if step % FLAGS.test_interval == 0:
+            #     test_loss, test_acc = 0.0, 0.0
+            #     for i in range(FLAGS.test_iter):
+            #         test_images_val, test_labels_val = sess.run([test_images, test_labels])
+            #         loss_value, acc_value = sess.run([network.loss, network.acc],
+            #                     feed_dict={network.is_train:False, images:test_images_val, labels:test_labels_val})
+            #         test_loss += loss_value
+            #         test_acc += acc_value
+            #     test_loss /= FLAGS.test_iter
+            #     test_acc /= FLAGS.test_iter
+            #     test_best_acc = max(test_best_acc, test_acc)
+            #     format_str = ('%s: (Test)     step %d, loss=%.4f, acc=%.4f')
+            #     print (format_str % (datetime.now(), step, test_loss, test_acc))
 
-                test_summary = tf.Summary()
-                test_summary.value.add(tag='test/loss', simple_value=test_loss)
-                test_summary.value.add(tag='test/acc', simple_value=test_acc)
-                test_summary.value.add(tag='test/best_acc', simple_value=test_best_acc)
-                summary_writer.add_summary(test_summary, step)
+            #     test_summary = tf.Summary()
+            #     test_summary.value.add(tag='test/loss', simple_value=test_loss)
+            #     test_summary.value.add(tag='test/acc', simple_value=test_acc)
+            #     test_summary.value.add(tag='test/best_acc', simple_value=test_best_acc)
+            #     summary_writer.add_summary(test_summary, step)
                 # test_loss_summary = tf.Summary()
                 # test_loss_summary.value.add(tag='test/loss', simple_value=test_loss)
                 # summary_writer.add_summary(test_loss_summary, step)
@@ -178,7 +178,7 @@ def train():
                 # test_best_acc_summary = tf.Summary()
                 # test_best_acc_summary.value.add(tag='test/best_acc', simple_value=test_best_acc)
                 # summary_writer.add_summary(test_best_acc_summary, step)
-                summary_writer.flush()
+                # summary_writer.flush()
 
             # Train
             start_time = time.time()
@@ -203,10 +203,10 @@ def train():
                                      examples_per_sec, sec_per_batch))
                 summary_writer.add_summary(train_summary_str, step)
 
-            # Save the model checkpoint periodically.
-            if (step > init_step and step % FLAGS.checkpoint_interval == 0) or (step + 1) == FLAGS.max_steps:
-                checkpoint_path = os.path.join(FLAGS.train_dir, 'model.ckpt')
-                saver.save(sess, checkpoint_path, global_step=step)
+            # # Save the model checkpoint periodically.
+            # if (step > init_step and step % FLAGS.checkpoint_interval == 0) or (step + 1) == FLAGS.max_steps:
+            #     checkpoint_path = os.path.join(FLAGS.train_dir, 'model.ckpt')
+            #     saver.save(sess, checkpoint_path, global_step=step)
         # tf.contrib.tfprof.model_analyzer.print_model_analysis(
         #     tf.get_default_graph(),
         #     run_meta=run_metadata,
