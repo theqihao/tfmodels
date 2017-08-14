@@ -1,6 +1,5 @@
 # alexnet
 alexnet/*.txt
-alexnet/run*
 
 # googlenet
 googlenet/*.txt
