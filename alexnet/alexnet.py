@@ -21,8 +21,7 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '0' 
 #tf.logging.set_verbosity(tf.logging.DEBUG)
 
-batch_size=512
-num_batches=100
+
 
 def print_activations(t):
     print(t.op.name, ' ', t.get_shape().as_list())
@@ -235,7 +234,7 @@ def run_benchmark():
     # Run the backward benchmark.
         run_metadata = tf.RunMetadata()
         mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(fc8-labels))
-        for i in range(100):
+        for i in range(num_batches):
           _ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
         # time_tensorflow_run(sess, grad, "Forward-backward")
         # tf.contrib.tfprof.model_analyzer.print_model_analysis(
@@ -271,10 +270,17 @@ def run_benchmark():
           run_meta=run_metadata,
           cmd='scope',
           options=opts)
+        tf.profiler.profile(
+          tf.get_default_graph(),
+          run_meta=run_metadata,
+          cmd='op',
+          options=opts)
         # output_dir='/home/liubo/tensorflow/tfmodels/alexnet/'
         # with tf.gfile.Open(os.path.join(output_dir, "run_meta"), "w") as f:
         #   f.write(run_metadata.SerializeToString())
         # tf.train.write_graph(sess.graph, './', 'train.pbtxt')
         #tf.profiler.write_op_log(graph, log_dir, op_log=None)
+batch_size=500
+num_batches=100
 run_benchmark()
 
