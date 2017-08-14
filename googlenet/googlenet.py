@@ -548,18 +548,21 @@ def run_benchmark():
     time_tensorflow_run(sess, grad, "Forward-backward")
     """
     #对Inception V1进行运算性能测试 
-    batch_size = 128 
+    batch_size = 16
     height, width = 224, 224 
     num_classes = 1000
-    num_batches = 5
+    num_batches = 10
     inputs = tf.random_uniform((batch_size, height, width, 3)) 
     outputs = tf.random_uniform((batch_size, num_classes)) 
     #with slim.arg_scope(inception_arg_scope()): 
     logits, end_points = inception_v1(inputs, num_classes) 
     #logits, end_points = inception_v1(inputs, 480, is_training = False) 
     init = tf.global_variables_initializer() 
-    sess = tf.Session() 
-    sess.run(init) 
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True  
+    config.gpu_options.allocator_type = 'BFC'
+    sess = tf.Session(config=config)
+    sess.run(init)
     print(inputs)
     print(outputs)
     #time_tensorflow_run(sess, logits, "Forward")  
@@ -576,10 +579,18 @@ def run_benchmark():
     run_metadata = tf.RunMetadata()
     for i in range(num_batches):  
       _ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
-    tf.contrib.tfprof.model_analyzer.print_model_analysis(
-      tf.get_default_graph(),
-      run_meta=run_metadata,
-      tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+    opts = (tf.profiler.ProfileOptionBuilder()
+          .with_max_depth(1000)
+          .select(['bytes','peak_bytes','residual_bytes','output_bytes'])
+          .account_displayed_op_only(False)
+          .with_stdout_output()
+          .with_min_memory(1, 1, 1, 1)
+          .build())
+    tf.profiler.profile(
+          tf.get_default_graph(),
+          run_meta=run_metadata,
+          cmd='scope',
+          options=opts)
 if __name__ == '__main__':
   run_benchmark()
   #tf.test.main()

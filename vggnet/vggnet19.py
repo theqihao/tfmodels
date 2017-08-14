@@ -180,6 +180,7 @@ def run_benchmark():
         sess.run(init)
         """
         config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True  
         config.gpu_options.allocator_type = 'BFC'
         sess = tf.Session(config=config)
         sess.run(init)

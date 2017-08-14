@@ -8,11 +8,11 @@
 | imagesize  | 224x224x3 	| 224x224x3   | 224x224x3 | 224x224x3 | 224x224x3 | 224x224x3 | 224x224x3 | 32x32x3 |
 | num_class  | 1000      	|    1000     | 1000      | 1000       | 1000      | 1000      | 1000      | 100     |
 | batch_size | 16      		|    16       |  16       | 16        |     16     |  16        |  16      |  16      |  
-| peak_size  | 1833.94MB 	| 24191MB     | 21824.7MB | 
-| nvidia-smi | 1225MiB   	| 4393MiB     | 5877MiB   | 
+| peak_size  | 1833.94MB 	| 24191MB     | 30861.9MB | 
+| nvidia-smi | 1225MiB   	| 4393MiB     | 4393MiB   | 
 | batch_size | 32        	|    32       | 32        |  32       |   32    |  32      | 32     |  32  |  
-| peak_size  | 2866.66MB 	| 31004.1MB   |47485.3MB  |
-| nvidia-smi | 1257MiB 		|  4393MiB    | 5877MiB
+| peak_size  | 2866.66MB 	| 31004.1MB   |37318.6MB  |
+| nvidia-smi | 1257MiB 		|  4393MiB    | 4393MiB
 | batch_size | 64       	|    64       | 64      |  64       |   64    |  64      | 64     |  64  |  
 | peak_size  | 3005.58MB 	| 
 | nvidia-smi | 2345MiB  	|			 |
