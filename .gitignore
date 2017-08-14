@@ -1,8 +1,20 @@
 # alexnet
 alexnet/*.txt
+alexnet/run*
+
+# googlenet
+googlenet/*.txt
+
+# resnet
+resnet/*.txt
 
 # resnext
 resnext/__pycache__/*
+
+# vggnet
+vggnet/*.txt
+
+
 
 # wrn
 wrn/wrn*

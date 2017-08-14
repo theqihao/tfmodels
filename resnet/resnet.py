@@ -430,12 +430,12 @@ def time_tensorflow_run(session, target, info_string):
     print ('%s: %s across %d steps, %.3f +/- %.3f sec / batch' %
            (datetime.now(), info_string, num_batches, mn, sd))
     
-batch_size = 4
+batch_size = 16
 height, width = 224, 224
 inputs = tf.random_uniform((batch_size, height, width, 3))
 outputs = tf.random_uniform((batch_size, 1000))
 with slim.arg_scope(resnet_arg_scope(is_training=False)):
-   net, end_points = resnet_v2_101(inputs, 1000)
+   net, end_points = resnet_v2_50(inputs, 1000)
 """
 init = tf.global_variables_initializer()
 sess = tf.Session()
@@ -450,7 +450,7 @@ config.gpu_options.allocator_type = 'BFC'
 config.allow_soft_placement = False
 sess = tf.Session(config=config)
 from tensorflow.python import debug as tf_debug
-sess = tf_debug.LocalCLIDebugWrapperSession(sess)
+#sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 sess.run(init)
 
 mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(net-outputs))

@@ -17,9 +17,11 @@ from datetime import datetime
 import math
 import time
 import tensorflow as tf
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = '0' 
+#tf.logging.set_verbosity(tf.logging.DEBUG)
 
-
-batch_size=128
+batch_size=512
 num_batches=100
 
 def print_activations(t):
@@ -213,7 +215,7 @@ def run_benchmark():
         init = tf.global_variables_initializer()
 
     # Start running operations on the Graph.
-        """
+        
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True      #????????  
         config.gpu_options.allocator_type = 'BFC'
@@ -222,6 +224,7 @@ def run_benchmark():
         """
         sess = tf.Session()
         sess.run(init)
+        """
     # Run the forward benchmark.
         #time_tensorflow_run(sess, pool5, "Forward")
 
@@ -232,12 +235,46 @@ def run_benchmark():
     # Run the backward benchmark.
         run_metadata = tf.RunMetadata()
         mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(tf.nn.l2_loss(fc8-labels))
-        _ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
-        #time_tensorflow_run(sess, grad, "Forward-backward")
-        tf.contrib.tfprof.model_analyzer.print_model_analysis(
-            tf.get_default_graph(),
-            run_meta=run_metadata,
-            tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+        for i in range(100):
+          _ = sess.run(mygrad, options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
+        # time_tensorflow_run(sess, grad, "Forward-backward")
+        # tf.contrib.tfprof.model_analyzer.print_model_analysis(
+        #     tf.get_default_graph(),
+        #     run_meta=run_metadata,
+        #     tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+        # tf.profiler.profile(
+        #   tf.get_default_graph(),
+        #   run_meta=run_metadata,
+        #   cmd='op',
+        #   options=tf.profiler.ProfileOptionBuilder.time_and_memory())
 
+        # tf.profiler.profile(
+        #   tf.get_default_graph(),
+        #   run_meta=run_metadata,
+        #   cmd='code',
+        #   options=tf.profiler.ProfileOptionBuilder.time_and_memory())
+
+        # tf.profiler.profile(
+        #   tf.get_default_graph(),
+        #   run_meta=run_metadata,
+        #   cmd='scope',
+        #   options=tf.profiler.ProfileOptionBuilder.time_and_memory())
+        opts = (tf.profiler.ProfileOptionBuilder()
+          .with_max_depth(1000)
+          .select(['bytes','peak_bytes','residual_bytes','output_bytes'])
+          .account_displayed_op_only(False)
+          .with_stdout_output()
+          .with_min_memory(1, 1, 1, 1)
+          .build())
+        tf.profiler.profile(
+          tf.get_default_graph(),
+          run_meta=run_metadata,
+          cmd='scope',
+          options=opts)
+        # output_dir='/home/liubo/tensorflow/tfmodels/alexnet/'
+        # with tf.gfile.Open(os.path.join(output_dir, "run_meta"), "w") as f:
+        #   f.write(run_metadata.SerializeToString())
+        # tf.train.write_graph(sess.graph, './', 'train.pbtxt')
+        #tf.profiler.write_op_log(graph, log_dir, op_log=None)
 run_benchmark()
 

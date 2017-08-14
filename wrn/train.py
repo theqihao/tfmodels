@@ -116,11 +116,16 @@ def train():
 
         # Build an initialization operation to run below.
         init = tf.initialize_all_variables()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True      #????????  
+        config.gpu_options.allocator_type = 'BFC'
+        sess = tf.Session(config=config)
+        sess.run(init)
 
         # Start running operations on the Graph.
-        sess = tf.Session(config=tf.ConfigProto(
-            gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=FLAGS.gpu_fraction),
-            log_device_placement=FLAGS.log_device_placement))
+        # sess = tf.Session(config=tf.ConfigProto(
+        #     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=FLAGS.gpu_fraction, allow_growth = True),
+        #     log_device_placement=FLAGS.log_device_placement))
         sess.run(init)
 
         # Create a saver.
@@ -178,10 +183,11 @@ def train():
             # Train
             start_time = time.time()
             train_images_val, train_labels_val = sess.run([train_images, train_labels])
-            _, lr_value, loss_value, acc_value, train_summary_str = \
-                    sess.run([network.train_op, network.lr, network.loss, network.acc, train_summary_op],
-                        feed_dict={network.is_train:True, images:train_images_val, labels:train_labels_val},
-                        options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
+            with tf.device('/gpu:1'):
+                _, lr_value, loss_value, acc_value, train_summary_str = \
+                        sess.run([network.train_op, network.lr, network.loss, network.acc, train_summary_op],
+                            feed_dict={network.is_train:True, images:train_images_val, labels:train_labels_val},
+                            options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
             duration = time.time() - start_time
 
             assert not np.isnan(loss_value)
@@ -201,11 +207,22 @@ def train():
             if (step > init_step and step % FLAGS.checkpoint_interval == 0) or (step + 1) == FLAGS.max_steps:
                 checkpoint_path = os.path.join(FLAGS.train_dir, 'model.ckpt')
                 saver.save(sess, checkpoint_path, global_step=step)
-        tf.contrib.tfprof.model_analyzer.print_model_analysis(
-            tf.get_default_graph(),
-            run_meta=run_metadata,
-            tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
-
+        # tf.contrib.tfprof.model_analyzer.print_model_analysis(
+        #     tf.get_default_graph(),
+        #     run_meta=run_metadata,
+        #     tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+        opts = (tf.profiler.ProfileOptionBuilder()
+          .with_max_depth(1000)
+          .select(['bytes','peak_bytes','residual_bytes','output_bytes'])
+          .account_displayed_op_only(False)
+          .with_stdout_output()
+          .with_min_memory(1, 1, 1, 1)
+          .build())
+        tf.profiler.profile(
+          tf.get_default_graph(),
+          run_meta=run_metadata,
+          cmd='scope',
+          options=opts)
 def main(argv=None):  # pylint: disable=unused-argument
   train()
 

@@ -13,6 +13,6 @@ python3 train.py --train_dir $train_dir \
     --lr_step_epoch 80.0 \
     --lr_decay 0.1 \
     --max_steps 1000 \
-    --checkpoint_interval 5000 \
+    --checkpoint_interval 1000 \
     --gpu_fraction 0.96 \
     --display 100 \
