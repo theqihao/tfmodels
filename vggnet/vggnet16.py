@@ -136,13 +136,31 @@ def time_tensorflow_run(session, target, feed, info_string):
 
 
 def qihao_run(session, target, feed, info_string):
-	run_metadata = tf.RunMetadata()
-	_ = session.run(target, feed_dict=feed,  options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
-	#time_tensorflow_run(sess, grad, {keep_prob:0.5}, "Forward-backward")
-	tf.contrib.tfprof.model_analyzer.print_model_analysis(
-		tf.get_default_graph(),
-		run_meta=run_metadata,
-		tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+    run_metadata = tf.RunMetadata()
+    for i in range(num_batches):
+        _ = session.run(target, feed_dict=feed,  options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE), run_metadata=run_metadata)
+	# #time_tensorflow_run(sess, grad, {keep_prob:0.5}, "Forward-backward")
+	# tf.contrib.tfprof.model_analyzer.print_model_analysis(
+	# 	tf.get_default_graph(),
+	# 	run_meta=run_metadata,
+	# 	tfprof_options=tf.contrib.tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+    opts = (tf.profiler.ProfileOptionBuilder()
+          .with_max_depth(1000)
+          .select(['bytes','peak_bytes','residual_bytes','output_bytes'])
+          .account_displayed_op_only(False)
+          .with_stdout_output()
+          .with_min_memory(1, 1, 1, 1)
+          .build())
+    tf.profiler.profile(
+          tf.get_default_graph(),
+          run_meta=run_metadata,
+          cmd='scope',
+          options=opts)
+    # tf.profiler.profile(
+    #       tf.get_default_graph(),
+    #       run_meta=run_metadata,
+    #       cmd='op',
+    #       options=opts)
 def run_benchmark():
     with tf.Graph().as_default():
         image_size = 224
@@ -159,18 +177,20 @@ def run_benchmark():
         predictions, softmax, fc8, p = inference_op(images, keep_prob)
 
         init = tf.global_variables_initializer()
+        """
        	sess = tf.Session()
         sess.run(init)
         """
         config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True  
         config.gpu_options.allocator_type = 'BFC'
         sess = tf.Session(config=config)
         sess.run(init)
-        """
-        qihao_run(sess, predictions, {keep_prob:1.0}, "Forward")
-        print(fc8)
+        
+        #qihao_run(sess, predictions, {keep_prob:1.0}, "Forward")
+        #print(fc8)
         objective = tf.nn.l2_loss(fc8)
-        print(objective)
+        #print(objective)
         grad = tf.gradients(objective, p)
         #loss = tf.reduce_mean(tf.reduce_sum(fc8-labels), reduction_indices=[1])
         #mygrad = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
@@ -180,7 +200,7 @@ def run_benchmark():
         #time_tensorflow_run(sess, grad, {keep_prob:0.5}, "Forward-backward")
 
 batch_size=64
-num_batches=100
+num_batches=10
 
 run_benchmark()
 
